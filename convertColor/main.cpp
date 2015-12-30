@@ -1,6 +1,6 @@
 #include <cv.h>
 #include <cxcore.h>
-#include <opencv.hpp>
+#include <highgui.h>
 #include <iostream>
 using namespace cv;
 using namespace std;
