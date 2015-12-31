@@ -49,8 +49,8 @@ bool IsDimodal(int* HistGram)       // 检测直方图是否为双峰的
 			//if (Count > 2) return false;
 		}
 	}
-	//cout << Count << endl;
-	if (Count >= 2)
+	cout << Count << endl;
+	if (Count == 2)
 		return true;
 	else
 		return false;
@@ -59,24 +59,53 @@ int GetMinimumThreshold(int* HistGram)
 {
 	int Y, Iter = 0;
 	int x1, x2;//第一第二峰值坐标
-	int y1=0 ,y2=0;  //峰值        
+	int y1=0 ,y2=0;  //峰值    
+	int HistGram2[256];
+	int stepnum = 5;
+	while (IsDimodal(HistGram) == false)                                        // 判断是否已经是双峰的图像了      
+	{
+		
+		for (int i = 0; i < 256; i++)
+		{
+			int count = 0;
+			double sum = 0;
+			for (int j = -stepnum / 2; j <= stepnum / 2; j++)
+			{
+				if (i + j >= 0 && i + j < 256)
+				{
+					sum += HistGram[i + j];
+					count++;
+				}
+			}
+			HistGram2[i] = sum / count;
+
+		}
+		for (int i = 0; i < 256; i++)
+		{
+			HistGram[i]=HistGram2[i] ;
+
+		}
+		Iter++;
+		if (Iter >= 1000) return -1;                                                   // 直方图无法平滑为双峰的，返回错误代码
+	}
 	if (!IsDimodal(HistGram))
 		return -1;
+	int kk = 0;
 	for (int i = 0; i < 255; i++)
 	{
 		if (HistGram[i - 1] < HistGram[i] && HistGram[i + 1] < HistGram[i])
 		{
-			if (y1 < HistGram[i])
-			{
-				if (y1>y2)
+		
+				if (kk == 0)
 				{
-					y2 = y1;
-					x2 = x1;
+					x1 = i;
+					kk++;
 				}
-				y1 = HistGram[i];
-				x1 = i;
-
-			}
+				if (kk == 1)
+				{
+					x2 = i;
+				}
+			
 		}
 		
 	}
@@ -114,9 +143,6 @@ int main()
 	rgb=imread("lena.jpg");
 	char c=0;
 	int  HistGram[256];
-	
-	while (1)
-	{
 		createTrackbar(trackbar_value1,
 			"BarValueThres", &threshold_value1,
 			255, Threshold_Demo);
@@ -142,7 +168,7 @@ int main()
 			HistGram[num]++;
 		}
 		jun /= 300 * 300;
-		cout << jun << endl;
+		//cout << jun << endl;
 		static ofstream outfile;
 		if (!outfile.is_open()) {
 			cout << "not open" << endl;
@@ -166,9 +192,8 @@ int main()
 		imshow("shuangfeng", shuangfeng);
 		inRange(gray, jun, 255, junzhi);
 		imshow("junzhi", junzhi);
-		c = cvWaitKey(10);
+		waitKey();
 
-	}
 		
 
 	
